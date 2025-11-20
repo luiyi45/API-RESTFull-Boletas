@@ -19,12 +19,23 @@ app = FastAPI(
 
 @app.post("/points-of-sale", response_model=PointOfSaleResponse, status_code=status.HTTP_201_CREATED)
 def create_point_of_sale(
-    pos: PointOfSaleCreate,
-    db: Session = Depends(get_db),
-    is_admin: bool = Depends(verify_admin_role)
+        pos: PointOfSaleCreate,
+        db: Session = Depends(get_db),
+        is_admin: bool = Depends(verify_admin_role)
 ):
 
+    if not pos.name or not pos.address or not pos.city_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Los campos name, address y city_id son requeridos"
+        )
 
+
+    if pos.name.strip() == "" or pos.address.strip() == "":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Name y address no pueden estar vacíos"
+        )
 
     existing_pos = db.query(PointOfSale).filter(PointOfSale.name == pos.name).first()
     if existing_pos:
@@ -62,7 +73,6 @@ def get_points_of_sale(
         city_id: int = None,
         db: Session = Depends(get_db)
 ):
-
     query = db.query(PointOfSale).filter(PointOfSale.is_active == 1)
 
     if city_id:
@@ -77,7 +87,6 @@ def get_point_of_sale(
         pos_id: int,
         db: Session = Depends(get_db)
 ):
-
     pos = db.query(PointOfSale).filter(PointOfSale.id == pos_id, PointOfSale.is_active == 1).first()
     if not pos:
         raise HTTPException(
@@ -95,6 +104,19 @@ def update_point_of_sale(
         is_admin: bool = Depends(verify_admin_role)
 ):
 
+    if not pos.name or not pos.address or not pos.city_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Los campos name, address y city_id son requeridos"
+        )
+
+
+    if pos.name.strip() == "" or pos.address.strip() == "":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Name y address no pueden estar vacíos"
+        )
+
     db_pos = db.query(PointOfSale).filter(PointOfSale.id == pos_id).first()
     if not db_pos:
         raise HTTPException(
@@ -102,7 +124,7 @@ def update_point_of_sale(
             detail="Punto de venta no encontrado"
         )
 
-    # Verificar si el nuevo nombre ya existe en otro punto de venta
+
     if pos.name != db_pos.name:
         existing_pos = db.query(PointOfSale).filter(PointOfSale.name == pos.name, PointOfSale.id != pos_id).first()
         if existing_pos:
@@ -136,7 +158,6 @@ def delete_point_of_sale(
         db: Session = Depends(get_db),
         is_admin: bool = Depends(verify_admin_role)
 ):
-
     db_pos = db.query(PointOfSale).filter(PointOfSale.id == pos_id).first()
     if not db_pos:
         raise HTTPException(
@@ -157,7 +178,6 @@ def delete_point_of_sale(
 
 @app.get("/")
 def read_root():
-
     return {"message": "Microservicio de Puntos de Venta funcionando correctamente"}
 
 

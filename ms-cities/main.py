@@ -24,6 +24,18 @@ def create_city(
         is_admin: bool = Depends(verify_admin_role)
 ):
 
+    if not city.name or not city.country:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Los campos name y country son requeridos"
+        )
+
+
+    if city.name.strip() == "" or city.country.strip() == "":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Name y country no pueden estar vacíos"
+        )
 
     existing_city = db.query(City).filter(City.name == city.name).first()
     if existing_city:
@@ -57,7 +69,6 @@ def get_cities(
         limit: int = 100,
         db: Session = Depends(get_db)
 ):
-
     cities = db.query(City).filter(City.is_active == 1).offset(skip).limit(limit).all()
     return cities
 
@@ -67,7 +78,6 @@ def get_city(
         city_id: int,
         db: Session = Depends(get_db)
 ):
-
     city = db.query(City).filter(City.id == city_id, City.is_active == 1).first()
     if not city:
         raise HTTPException(
@@ -85,13 +95,25 @@ def update_city(
         is_admin: bool = Depends(verify_admin_role)
 ):
 
+    if not city.name or not city.country:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Los campos name y country son requeridos"
+        )
+
+
+    if city.name.strip() == "" or city.country.strip() == "":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Name y country no pueden estar vacíos"
+        )
+
     db_city = db.query(City).filter(City.id == city_id).first()
     if not db_city:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Ciudad no encontrada"
         )
-
 
     if city.name != db_city.name:
         existing_city = db.query(City).filter(City.name == city.name, City.id != city_id).first()
@@ -123,7 +145,6 @@ def delete_city(
         db: Session = Depends(get_db),
         is_admin: bool = Depends(verify_admin_role)
 ):
-
     db_city = db.query(City).filter(City.id == city_id).first()
     if not db_city:
         raise HTTPException(
@@ -144,7 +165,6 @@ def delete_city(
 
 @app.get("/")
 def read_root():
-
     return {"message": "Microservicio de Ciudades funcionando correctamente"}
 
 

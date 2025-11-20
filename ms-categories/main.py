@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import Base, engine
 from models import Category
@@ -7,7 +7,6 @@ from utils import get_db
 from auth import verify_admin_role
 
 app = FastAPI(title="MS Categories")
-
 
 Base.metadata.create_all(bind=engine)
 
@@ -35,6 +34,21 @@ def get_category(category_id: int, db: Session = Depends(get_db)):
     dependencies=[Depends(verify_admin_role)]
 )
 def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
+
+
+    if not category.name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El campo name es requerido"
+        )
+
+
+    if category.name.strip() == "":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Name no puede estar vacío"
+        )
+
     new_category = Category(**category.model_dump())
     db.add(new_category)
     db.commit()
@@ -48,6 +62,21 @@ def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
     dependencies=[Depends(verify_admin_role)]
 )
 def update_category(category_id: int, category: CategoryUpdate, db: Session = Depends(get_db)):
+
+
+    if not category.name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El campo name es requerido"
+        )
+
+
+    if category.name.strip() == "":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Name no puede estar vacío"
+        )
+
     db_category = db.query(Category).filter(Category.id == category_id).first()
     if not db_category:
         raise HTTPException(404, "La categoría no existe.")

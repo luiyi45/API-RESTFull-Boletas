@@ -48,6 +48,18 @@ def register_user(
         db: Session = Depends(get_db)
 ):
 
+    if not user.name or not user.email or not user.password or not user.role:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Todos los campos son requeridos: name, email, password, role"
+        )
+
+
+    if user.name.strip() == "" or user.email.strip() == "" or user.password.strip() == "" or user.role.strip() == "":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Los campos no pueden estar vacíos o contener solo espacios"
+        )
 
     existing_user = db.query(User).filter(User.email == user.email).first()
     if existing_user:
@@ -84,6 +96,19 @@ def login_user(
         user_data: UserLogin,
         db: Session = Depends(get_db)
 ):
+
+    if not user_data.email or not user_data.password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Debe enviar 'email' y 'password'"
+        )
+
+
+    if user_data.email.strip() == "" or user_data.password.strip() == "":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email y password no pueden estar vacíos"
+        )
 
     user = db.query(User).filter(User.email == user_data.email).first()
     if not user or not verify_password(user_data.password, user.password):
