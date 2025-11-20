@@ -64,7 +64,7 @@ def register_user(
     existing_user = db.query(User).filter(User.email == user.email).first()
     if existing_user:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_409_CONFLICT,
             detail="El email ya está registrado"
         )
 
@@ -151,10 +151,14 @@ def get_all_users(
         current_user: dict = Depends(verify_admin_role),
         db: Session = Depends(get_db)
 ):
-
-    users = db.query(User).all()
-    return users
-
+    try:
+        users = db.query(User).all()
+        return users
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
+        )
 
 @app.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(
