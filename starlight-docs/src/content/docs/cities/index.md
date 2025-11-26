@@ -124,7 +124,7 @@ Nota: para usar este endpoint no se necesita autenticación JWT
 | Autorización     | Opcional (Accesible por todos los usuarios)               |
 
 ### Request (Parámetros de ruta)
-- `city_id` (string): ID único de la ciudad
+- `city_id`: ID único de la ciudad
 
 ### Response
 **Códigos de estado posibles:** 200, 404, 500.
